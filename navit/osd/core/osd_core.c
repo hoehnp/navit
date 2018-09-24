@@ -3842,13 +3842,18 @@ static void osd_auxmap_draw(struct osd_priv_common *opc) {
     int d=10;
     struct point p;
     struct attr mapset;
+    struct attr attr;
 
     if (!opc->osd_item.configured)
         return;
     if (!navit_get_attr(this->nav, attr_mapset, &mapset, NULL) || !mapset.u.mapset)
         return;
+    if (! navit_get_attr(this->nav, attr_layout, &attr, NULL))
+        return;
     p.x=opc->osd_item.w/2;
     p.y=opc->osd_item.h/2;
+
+    this->layout=attr.u.layout;
 
     if (opc->osd_item.rel_h || opc->osd_item.rel_w) {
         struct map_selection sel;
