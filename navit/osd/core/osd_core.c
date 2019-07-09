@@ -2723,6 +2723,7 @@ static void osd_speed_warner_click(struct osd_priv_common *opc, struct navit *na
     if ((p->x < bp.x || p->y < bp.y || p->x > bp.x + opc->osd_item.w || p->y > bp.y + opc->osd_item.h
             || !opc->osd_item.configured ) && !opc->osd_item.pressed)
         return;
+    return;
     if (button != 1)
         return;
     if (navit_ignore_button(nav))
