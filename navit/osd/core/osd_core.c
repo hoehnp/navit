@@ -2726,13 +2726,13 @@ static void osd_speed_warner_click(struct osd_priv_common *opc, struct navit *na
     if (button != 1)
         return;
 
-    /*    if (navit_ignore_button(nav)) */
-    /*        return; */
+    if (navit_ignore_button(nav))
+        return;
     if (!!pressed == !!opc->osd_item.pressed)
         return;
 
     this->active = !this->active;
-    /*    osd_speed_warner_draw(opc, nav, NULL); */
+    osd_speed_warner_draw(opc, nav, NULL);
 }
 
 

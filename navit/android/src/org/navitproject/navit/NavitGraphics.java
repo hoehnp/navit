@@ -307,7 +307,7 @@ public class NavitGraphics {
                         Log.d(TAG, "onTouch move");
 
                         MotionCallback(MotionCallbackID, x, y);
-                        ButtonCallback(ButtonCallbackID, 0, 1, x, y); // up
+                        //ButtonCallback(ButtonCallbackID, 0, 1, x, y); // up
 
                         break;
                     case ZOOM:
