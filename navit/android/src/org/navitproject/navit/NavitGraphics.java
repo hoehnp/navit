@@ -328,9 +328,9 @@ public class NavitGraphics {
                     case PRESSED:
                         if (in_map) {
                             ButtonCallback(ButtonCallbackID, 1, 1, x, y); // down
-                            ButtonCallback(ButtonCallbackID, 0, 1, x, y); // up
                         }
 
+                        ButtonCallback(ButtonCallbackID, 0, 1, x, y); // up
                         break;
                 }
                 touch_mode = NONE;
