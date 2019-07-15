@@ -308,6 +308,7 @@ public class NavitGraphics {
 
                         MotionCallback(MotionCallbackID, x, y);
                         ButtonCallback(ButtonCallbackID, 0, 1, x, y); // up
+			draw_mode(0);
 
                         break;
                     case ZOOM:
