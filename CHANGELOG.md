@@ -2,37 +2,243 @@
 
 All notable changes to this project will be documented in this file.
 
-Changes and documentation about Navit can be found in the wiki at:
-  http://wiki.navit-project.org
-A timeline of opened and closed issue tickets can be found at our trac instance:
-  http://trac.navit-project.org and on our github project:
-  https://github.com/navit-gps/navit/issues
+Changes and documentation about Navit can be found in the docs:
+https://navit.readthedocs.io/en/latest/index.html
+Please Report Bugs on our github project:
+https://github.com/navit-gps/navit/issues
 
+
+## semantic versioning
 Navit follows the semantic versioning:
-* `x.y.Z` (patch): only bug fixes or refactoring, no changes in functionality
-* `x.Y.z` (minor): added or changed functionality but can be used as a drop-in
-  replacement for the previous version (all data formats and interfaces are still
-  supported); minor UI changes (such as moving individual menu items) are also
-  allowed
-* X.y.z (major): at least one of the following:
-  * Major new functionality (such as Augmented Reality, inertial navigation or
-    support for live traffic services): de-facto standard for end-user apps
-  * New user interface (such as moving from the old pulldown menu UI to the Internal
-    GUI): this is definitely the UI equivalent of a breaking API change
-  * Dropped support for a data format or interface: also a breaking change and
-    usually tends to occur along with larger changes which would warrant a new major
-    version anyway
+
+### major
+`X.y.z` (major): at least one of the following:
+
+* Major new functionality (such as Augmented Reality, inertial navigation or
+support for live traffic services): de-facto standard for end-user apps
+* New user interface (such as moving from the old pulldown menu UI to the Internal
+GUI): this is definitely the UI equivalent of a breaking API change
+* Dropped support for a data format or interface: also a breaking change and
+usually tends to occur along with larger changes which would warrant a new major
+version anyway
+
+### minor
+`x.Y.z` (minor): added or changed functionality but can be used as a drop-in
+replacement for the previous version (all data formats and interfaces are still
+supported); minor UI changes (such as moving individual menu items) are also
+allowed
+
+### patch
+`x.y.Z` (patch): only bug fixes or refactoring, no changes in functionality
+
+## [0.5.7] - 2026-01-30
+
+### 🚀 Features
+
+- Maptool: Allow to run multiple instances concurrently
+- Maptool: circular junctions allow oneway to be specified
+- Routing: Consider one-way property of circular junctions
+- Routing: Improve Time of Arrival Estimation
+
+### ⚡ Breaking Changes
+
+- navit.xml: roadprofile: route_weight parameter removed
+- navit.xml: vehicleprofile: maxspeed_handling attribute removed
+
+### 🐛 Bug Fixes
+
+- Geoclue: speed conversion from mps to kph
+- Core Do not crash if center has no coordinates
+- Core Correctly parse coordinates from string
+- Core:Do not crash on recursive navit_add_attr
+- Core:Redraw map when the orientation attribute is changed
+- Python_bindings: Try to build if python 2 only.
+- Build:Fix build warnings
+- Build:Add Target scopes
+- Build:tomtom:Update tomtom image to our github image which was updated to debian bookworm
+- Unterminated strings avoided, compiler warnings mitigated
+- Traffic:Fix error on missing error message
+- Memory: Corruption fix on homedir edge case
+- Search_houseno_interpol: Ensure distance is allocated to desired size
+- CI Artefacts fixed to contain all necessary resources
+- DTD: polygon: missing attributes src, w, h added
+
+### 🌏 Translations
+
+- I18n: break build on outdated msgid on ci_sanity_checks
+- I18n: Update PO files to current strings
+- Translation updates for:
+  - Basque
+  - Dutch
+  - English
+  - German
+  - Hindi
+  - Italian
+  - Odia
+  - Polish
+  - Portuguese
+  - Romanian
+  - Russian
+  - Spanish
+  - Tamil
+
+### 📚 Documentation
+
+- Piper-tts, speech2wave install and configuration instructions added
+- Vehicle: GUI vehicle activating procedure added
+- Vehicle: Give example for activated, enabled demo vehicle
+- Fix Formatting of Commands Table
+- Remove outdated reference to slow script
+- Fix Links to Contact info
+- Rename files with whitespace
+- Remove old backup file
+- Automatically convert svg to png to avoid problems with latex
+- Only show gif's in html
+- Remove Layout's from doc as those are better suited as xml files
+- Update Link to the old wiki to point to the doc's
+- Migrate all wiki link to the docs for non doc files
+- def files are not generated from wiki any more
+
+### ⚙️ Miscellaneous Tasks
+
+- Core Print stacktrace on SIG11 without gdb
+- Convert gif to jpg because of errors with gif
+- clang-format introduced and CI check implemented
+- Debug: Switch ASAN introduced
+- Command: dangling pointer ctx.attr resolved
+- Main: compiler warning about ifdef AND ifdef fixed
+- Linux: Dead Code removal for CircleCI icon logic
+- Build: ci_sanity_check fail with exit code on error
+- Build:Introduce GitHub actions (#1162)
+- Build: cmake upgraded to 3.18
+- Build: On CMAKE_BUILDE_TYPE=Debug set gdb-friendly compiler options
+- Container:Added wget to container image so mapserver can download mapfiles
+- Core:cmake correctly detect protbuf-c
+- Core:Add missing import
+- Missing includes added
+- Qt5 Allow to disable QML rotation.
+- Qt5 allow to set source from outside
+- Glib Fix compile warning
+- Build: Plugin loading fixed
+- Generate_contributors speed up
+- Migrate from circleCI to GHA
+- Build Fdroid fixed by switching buildserver to bookworm
+- Warning on String Truncation resolved
+- Build:Dockerfile: Add Dockerfile for maptool Container
+- Improve CI_sanity_check (speedup, provide patch on formatting errors, provide
+  summary)
+- Ci_sanity_check: check xml for validity towards dtd always
+- Map_Textfile: Error message unable to get line clarified
+
+#### Sailfish
+
+- Sailfish version bump
+- Sailfish speed up build
+- Sailfish use newer sdk
+
+#### Ubuntu Touch
+
+- Ubuntutouch First working build.
+- Qt5 fix ubtouch loader. This now disables screensaver
+- Ubuntutouch Prevent screen saver if application runs
+
+#### Android
+
+- Fix ci build
+- Build Android/F-droid libnavit.so added to apk
+- do not update containers prior build
+- Android: NDK upgraded to 25.2.9519653
+- Permissions fixed
+- Android/F-Droid: Warning about buildToolsVersion resolved
+- Android intent export flag specified for upgrade to android 12
+- Android:GUI/Internal: Show contextual GUI menu when receiving geo intent
+- Fdroid: compileSdkVersion increased to satisfy linter
+- Build: Ninja conditions removed from Android-builds
 
 
-## [Unreleased]
+## [v0.5.6](https://github.com/navit-gps/navit/compare/v0.5.5...v0.5.6) - 2021-03-06
 
-To get the list of all the unreleased commits, see:
-[Full Changelog](https://github.com/navit-gps/navit/compare/v0.5.4...HEAD)
+### Added
+
+* Add:traffic:Log class/type of unrecognized events during XML parsing. [mvglasow]
+* Add:traffic:Log ID for messages discarded as invalid. [mvglasow]
+* Add:graphics:svg\_debug:Add svg\_debugging plugin (#1061) [jkoan]
+* Add:vehicle:Add first Prototype of the geoclue Plugin. [jkoan]
+* Add:port/android:Adaptive app icon. [mvglasow]
+* Added license information to fix #1048 (#1060) [Patrick Höhn]
+* Add:traffic/traff\_android:Process heartbeat requests. [mvglasow]
+* Add:traffic/traff\_android:Log subscription operations in detail. [mvglasow]
+* Add:port/android:Adaptive app icon. [mvglasow]
+* Add:traffic:Complete TraFF 0.8 subscription suport. [mvglasow]
+* Add:traffic:Add basic TraFF 0.8 support. [mvglasow]
+
+### Changed
+
+* Update macos\_development.rst. [Patrick Höhn]
+* Change:android:Remove map download size limit on modern Android versions (#1029) [Johan Fitié]
+
+### Fixed
+
+* Build:Use NDK libraries when building for Android. [mvglasow]
+* Build:Keep generated Android resource files in build dir. [mvglasow]
+* Build:Reduce source tree pollution by Android build CMake output now moved to android-builddir Generated XML, PNG and translations still get written to source tree. [mvglasow]
+* Vehicle:gpsd:Fix #1090, plugin\_init not found. [jkoan]
+* Fixed:android:build:Fixed the apk outputname and the corresponding locations within the scripts. [jkoan]
+* Build:do not request CXX if explicitly disabled. [mvglasow]
+* Build/android:do not double-define getcwd on recent NDK versions. [mvglasow]
+* Build:android: Fix VersionCode after 31.12.2020 (#1082) [jkoan]
+* Fix Link to full Changelog. [jkoan]
+* Build:Remove install of git as the baseimage already has it. [jkoan]
+* Builds:Revert baseimage back and oly set merge\_trunk\_in\_master to cimg/base. [jkoan]
+* Core:Prevent crash if destination is set before acquiring a location. [mvglasow]
+* Vehicle\_geoclue:Fix speed and direction and do some cleanup. [jkoan]
+* Vehicle:Fix codestyle. [jkoan]
+* Android:Add possibility to use background position usage. [jkoan]
+* Build:Prevent try\_compile() from choking on CXX. [mvglasow]
+* Plugin/j1850: Replace graphic\_fg\_white with graphic\_fg. [James Hilliard]
+* Build:core:Fix two issues where the wrong enum type is used, but both have the same value of 0. [jkoan]
+* Core:osd:Altitude in metric with imperial defined. [Patrick Höhn]
+* Build:android:Add extra security check for gradle. [jkoan]
+* Android:Add possibility to use background position usage. [jkoan]
+* Vehicle:gpsd:minor comment fix. [jkoan]
+* Fix:graphics:win32:Fix build with newer libpng versions. Thx @bignaux fixes #984. [jkoan]
+* Build:Fix usage of inkscape 1.0 commandline usage. [jkoan]
+* Build:Fix Codesigning with newer ndk image versions. [jkoan]
+* Maptool:Add missing external, fixes #1045. [barbeque-squared]
+* Graphics/qt5:Add missing include. [barbeque-squared]
+* Vehicle:gpsd:Add Support for Gpsd 3.21. [jkoan]
+* Core:Optimize log message for required vehicle attributes. [jkoan]
+* Traffic/traff\_android:Get subscription ID from request where applicable. [mvglasow]
+* Traffic/traff\_android:Fix log messages when subscription ID is missing. [mvglasow]
+* Traffic/traff\_android:Fix log messages when content URI is missing. [mvglasow]
+* Traffic/traff\_android:Fix subscription lookup. [mvglasow]
+* Core:Prevent crash if destination is set before acquiring a location. [mvglasow]
+* Core:Fix invalid pointer which would cause unpredictable crashes. [mvglasow]
+* Core:set destination before firing callbacks. [mvglasow]
+* Build:Prevent try\_compile() from choking on CXX. [mvglasow]
+
+### Other
+
+* Refactor:fdroid:Remove build.xml generation. [mvglasow]
+* Refactor:core:Documentation update (#1095) [mvglasow]
+* Refactor:build:merge into one single build.gradle. [mvglasow]
+* Refactor:traffic/traff\_android:remove TODO comment. [mvglasow]
+* Refactor:traffic:Make sanity check happy. [mvglasow]
+* Docs: fix simple typo, useage -\> usage. [Tim Gates]
+* Refactor:core:Fix documentation for route\_graph\_build() [mvglasow]
+* Refactor:core:make sanity\_check happy (sort of, see #1041) [mvglasow]
+* Refactor:core:Fix documentation for route\_graph\_build() [mvglasow]
+* Refactor:traffic/traff\_android:Fix checkstyle issues. [mvglasow]
+* Refactor:traffic/traff\_android:Fix Javadoc formatting. [mvglasow]
+* Refactor:traffic/traff\_android:More sanity check fixes. [mvglasow]
+* Refactor:traffic:Make sanity check happy. [mvglasow]
+* Refactor:core:Add documentation. [mvglasow]
+* Refactor:core:Add documentation. [mvglasow]
 
 
-## [0.5.5] - 2020-08-08
+## [v0.5.5](https://github.com/navit-gps/navit/compare/v0.5.4...v0.5.5) - 2020-08-08
 
-## Added
+### Added
 
 * Add poly\_swimming\_pool. [Stefan Wildemann]
 * Add:maptool:enhance leisure=track handling and add poi\_archeaological\_site (#1005) [Stefan Wildemann]
@@ -44,7 +250,7 @@ To get the list of all the unreleased commits, see:
 * Add:build:Android build and signing. Also add fastlane for metadata. Set execute on scripts/\*.sh. [jkoan]
 * Add:cmake: add compilation flags to harden the security of navit (#969) [Joseph Herlant]
 
-## Changed
+### Changed
 
 * Change:core:Remove unused argument from attr\_search. [jkoan]
 * Change\_layout:Make sure park, meadow, scrub, and wood render in correct order (#1017) [Johan Fitié]
@@ -54,7 +260,7 @@ To get the list of all the unreleased commits, see:
 * Change:android:build:Fix empty Variable handling. [jkoan]
 * Change:metadata:Rename Title to "Navit" only because everybody knows that its for Android when found within F-Droid or Google Play store. [jkoan]
 
-## Fixed
+### Fixed
 
 * Android:Remove old, confusing AndroidManifest.xml. [jkoan]
 * Android:Readd android:sharedUserId to allow for Updates. [jkoan]
@@ -79,7 +285,7 @@ To get the list of all the unreleased commits, see:
 * Plugins: too few arguments to functions navit\_attr\_iter\_new and config\_attr\_iter\_new (#966) [Joseph Herlant]
 * Port/android:Use new icon for notification (#963) [mvglasow]
 
-## Other
+### Other
 
 * Android: Activate downloaded maps automatically (#1027) [Johan Fitié]
 * Improvement:layout:car-dark Improve Car-Dark layout colors (#1028) [Johan Fitié]
@@ -94,7 +300,7 @@ To get the list of all the unreleased commits, see:
 * Improve layout (#1002) [Johan Fitié]
 * Use debian:latest in the CI to get more up-to-date tools (#971) [Joseph Herlant]
 
-## [0.5.4] - 2020-01-18
+## [v0.5.4](https://github.com/navit-gps/navit/compare/v0.5.3...v0.5.4) - 2020-01-18
 
 ### Added
 
@@ -191,7 +397,7 @@ To get the list of all the unreleased commits, see:
 - Refactoring:mingw:simplify toolchain [\#659](https://github.com/navit-gps/navit/pull/659) ([bignaux](https://github.com/bignaux))
 - Refactoring:cmake:from 2.6 to 3.2 [\#651](https://github.com/navit-gps/navit/pull/651) ([bignaux](https://github.com/bignaux))
 
-## [v0.5.3] - 2018-08-31
+## [v0.5.3](https://github.com/navit-gps/navit/compare/v0.5.2...v0.5.3) - 2018-08-31
 
 Release 0.5.2 had issues with the version not properly updated in the `CMakeLists.txt`. This release fixes that issue.
 
@@ -200,7 +406,7 @@ Release 0.5.2 had issues with the version not properly updated in the `CMakeList
 * Update Sailfish spec for release 0.5.3. [Joseph Herlant]
 * Update Patch version for release 0.5.3. [Joseph Herlant]
 
-## [v0.5.2] - 2018-08-30
+## [v0.5.2](https://github.com/navit-gps/navit/compare/v0.5.1...v0.5.2) - 2018-08-30
 
 ### Added
 
@@ -300,7 +506,7 @@ Release 0.5.2 had issues with the version not properly updated in the `CMakeList
 * Android:Fix:remove unused dependency libpng (#592) [jandegr]
 
 
-## [v0.5.1] - 2018-04-19
+## [v0.5.1](https://github.com/navit-gps/navit/compare/v0.5.0...v0.5.1) - 2018-04-19
 
 ### Added
 
@@ -751,7 +957,7 @@ Release 0.5.2 had issues with the version not properly updated in the `CMakeList
 * We always want the failed code from bash not from tee. [jkoan]
 * Little quick change to make it working fast. [jkoan]
 * Auto pitch and orientation (#306) [Johan Fitié]
-* #1352 workaround. [mdankov]
+* \#1352 workaround. [mdankov]
 * Smaller Android screenshot for README.md. [Johan Fitié]
 * Pitch correction (#303) [Johan Fitié]
 * [POI] Resize SVG icons to 22x22 (#304) [Johan Fitié]
@@ -899,29 +1105,20 @@ Release 0.5.2 had issues with the version not properly updated in the `CMakeList
 * Trac-1064 render OSM shop=mall as poi\_mall. [Pierre GRANDIN]
 * Bumping the trunk to 0.5.1. [Pierre GRANDIN]
 
-## [v0.5.0] - 2015-12-31
+## [v0.5.0](https://github.com/navit-gps/navit/compare/v0.5.0-rc.2...v0.5.0) - 2015-12-31
 
 This release was done before the adoption of this changelog format. Use
 [this v0.5.0-rc.2 to v0.5.0 comparison link](https://github.com/navit-gps/navit/compare/v0.5.0-rc.2...v0.5.0)
 to view the corresponding changes.
 
-## [v0.5.0-rc2] - 2015-09-02
+## [v0.5.0-rc2](https://github.com/navit-gps/navit/compare/v0.5.0-rc.1...v0.5.0-rc.2) - 2015-09-02
 
 This release was done before the adoption of this changelog format. Use
 [this v0.5.0-rc.1 to v0.5.0-rc.2 comparison link](https://github.com/navit-gps/navit/compare/v0.5.0-rc.1...v0.5.0-rc.2)
 to view the corresponding changes.
 
-## [v0.5.0-rc1] - 2015-08-08
+## [v0.5.0-rc1](https://github.com/navit-gps/navit/compare/v0.5.0-beta.1...v0.5.0-rc.1) - 2015-08-08
 
 This release was done before the adoption of this changelog format. Use
 [this v0.5.0-beta.1 to v0.5.0-rc.1 comparison link](https://github.com/navit-gps/navit/compare/v0.5.0-beta.1...v0.5.0-rc.1)
 to view the corresponding changes.
-
-[Unreleased]: https://github.com/navit-gps/navit/compare/v0.5.4...HEAD
-[v0.5.4]: https://github.com/navit-gps/navit/compare/v0.5.3...v0.5.4
-[v0.5.3]: https://github.com/navit-gps/navit/compare/v0.5.2...v0.5.3
-[v0.5.2]: https://github.com/navit-gps/navit/compare/v0.5.1...v0.5.2
-[v0.5.1]: https://github.com/navit-gps/navit/compare/v0.5.0...v0.5.1
-[v0.5.0]: https://github.com/navit-gps/navit/compare/v0.5.0-rc.2...v0.5.0
-[v0.5.0-rc.2]: https://github.com/navit-gps/navit/compare/v0.5.0-rc.1...v0.5.0-rc.2
-[v0.5.0-rc.1]: https://github.com/navit-gps/navit/compare/v0.5.0-beta.1...v0.5.0-rc.1

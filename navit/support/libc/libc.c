@@ -35,8 +35,9 @@ getenv(const char *name)
 {
 	int i;
 	for (i=0; i < MAXENV; i++) {
-		if (envnames[i] && !strcmp(envnames[i], name))
+		if (envnames[i] && !strcmp(envnames[i], name)){
 			return envvars[i];
+		}
 	}
 	return NULL;
 }

@@ -79,7 +79,6 @@ public class Navit extends Activity {
     private static final int           NavitDownloaderSelectMap_id     = 967;
     private static final int           NavitAddressSearch_id           = 70;
     private static final int           NavitSelectStorage_id           = 43;
-    private static final String        NAVIT_PACKAGE_NAME              = "org.navitproject.navit";
     private static final String        TAG                             = "Navit";
     static String                      sMapFilenamePath;
     boolean                            mIsFullscreen;
@@ -98,7 +97,7 @@ public class Navit extends Activity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = getString(R.string.channel_name);
             int importance = NotificationManager.IMPORTANCE_LOW;
-            NotificationChannel channel = new NotificationChannel(NAVIT_PACKAGE_NAME, name, importance);
+            NotificationChannel channel = new NotificationChannel(this.getPackageName(), name, importance);
             NotificationManager notificationManager = getSystemService(NotificationManager.class);
             notificationManager.createNotificationChannel(channel);
         }
@@ -127,7 +126,7 @@ public class Navit extends Activity {
             ApplicationInfo appInfo;
             long apkUpdateTime = 0;
             try {
-                appInfo = pm.getApplicationInfo(NAVIT_PACKAGE_NAME, 0);
+                appInfo = pm.getApplicationInfo(this.getPackageName(), 0);
                 apkUpdateTime = new File(appInfo.sourceDir).lastModified();
             } catch (NameNotFoundException e) {
                 Log.e(TAG, "Could not read package infos");
@@ -146,7 +145,7 @@ public class Navit extends Activity {
      */
     private boolean extractRes(String resname, String result) {
         Log.d(TAG, "Res Name " + resname + ", result " + result);
-        int id = NavitAppConfig.sResources.getIdentifier(resname, "raw", NAVIT_PACKAGE_NAME);
+        int id = NavitAppConfig.sResources.getIdentifier(resname, "raw", this.getPackageName());
         Log.d(TAG, "Res ID " + id);
         if (id == 0) {
             return false;
@@ -233,7 +232,7 @@ public class Navit extends Activity {
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface arg0, int arg1) {
                             Log.d(TAG, "user wants more info, show the website");
-                            String url = "http://wiki.navit-project.org/index.php/Navit_on_Android";
+                            String url = "https://navit.readthedocs.io/en/latest/user/platforms/maintained/android.html";
                             Intent i = new Intent(Intent.ACTION_VIEW);
                             i.setData(Uri.parse(url));
                             startActivity(i);
@@ -248,10 +247,15 @@ public class Navit extends Activity {
 
     private void verifyPermissions() {
         if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            return;
+        } else if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            return;
+        } else {
             Log.d(TAG,"ask for permission(s)");
             ActivityCompat.requestPermissions(this, new String[] {
-                    Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQ_FINE_LOC);
+                    Manifest.permission.ACCESS_BACKGROUND_LOCATION}, MY_PERMISSIONS_REQ_FINE_LOC);
         }
     }
 
@@ -368,7 +372,7 @@ public class Navit extends Activity {
             } else if (naviScheme.equals("geo")
                     && intent.getAction().equals("android.intent.action.VIEW")) {
                 invokeCallbackOnGeo(intent.getData().getSchemeSpecificPart(),
-                        NavitCallbackHandler.MsgType.CLB_SET_DESTINATION, "");
+                        NavitCallbackHandler.MsgType.CLB_COORD_ACTIONS, "");
             }
         }
     }
@@ -400,12 +404,12 @@ public class Navit extends Activity {
 
     private void buildNotification() {
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        PendingIntent appIntent = PendingIntent.getActivity(getApplicationContext(), 0, getIntent(), 0);
+        PendingIntent appIntent = PendingIntent.getActivity(getApplicationContext(), 0, getIntent(), PendingIntent.FLAG_MUTABLE);
 
         Notification navitNotification;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             Notification.Builder builder;
-            builder = new Notification.Builder(getApplicationContext(), NAVIT_PACKAGE_NAME);
+            builder = new Notification.Builder(getApplicationContext(), this.getPackageName());
             builder.setContentIntent(appIntent);
             builder.setAutoCancel(false).setOngoing(true);
             builder.setContentTitle(getTstring(R.string.app_name));
@@ -728,7 +732,7 @@ public class Navit extends Activity {
                 if (resultCode == RESULT_OK) {
                     String newDir = data.getStringExtra(FileBrowserActivity.returnDirectoryParameter);
                     Log.d(TAG, "selected path= " + newDir);
-                    if (!newDir.contains("/navit")) {
+                    if (!(newDir.contains("/navit") || newDir.contains("/org.navitproject.navit"))) {
                         newDir = newDir + "/navit/";
                     } else {
                         newDir = newDir + "/";
@@ -774,7 +778,8 @@ public class Navit extends Activity {
     private void setMapLocation() {
         Intent fileExploreIntent = new Intent(this,FileBrowserActivity.class);
         fileExploreIntent
-            .putExtra(FileBrowserActivity.startDirectoryParameter, "/mnt")
+            .putExtra(FileBrowserActivity.startDirectoryParameter,
+                    getApplicationContext().getExternalFilesDir(null).toString())
             .setAction(FileBrowserActivity.INTENT_ACTION_SELECT_DIR);
         startActivityForResult(fileExploreIntent,NavitSelectStorage_id);
     }

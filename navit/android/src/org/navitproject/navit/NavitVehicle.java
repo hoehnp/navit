@@ -25,15 +25,18 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
-import android.location.GpsSatellite;
-import android.location.GpsStatus;
+import android.location.GnssStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
+import java.util.HashSet;
 import java.util.List;
 
 
@@ -58,7 +61,8 @@ public class NavitVehicle {
 
     public native void vehicleCallback(long id, int enabled);
 
-    private class NavitLocationListener extends BroadcastReceiver implements GpsStatus.Listener, LocationListener {
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private class NavitLocationListener extends BroadcastReceiver implements LocationListener {
         boolean mPrecise = false;
 
         public void onLocationChanged(Location location) {
@@ -87,19 +91,19 @@ public class NavitVehicle {
         /**
          * Called when the status of the GPS changes.
          */
-        public void onGpsStatusChanged(int event) {
+        //@Override
+        @RequiresApi(api = Build.VERSION_CODES.N)
+        public void onSatelliteStatusChanged(GnssStatus status) {
             if (ContextCompat.checkSelfPermission(mContext, android.Manifest.permission.ACCESS_FINE_LOCATION)
                     != PackageManager.PERMISSION_GRANTED) {
                 // Permission is not granted
                 return;
             }
-            GpsStatus status = sLocationManager.getGpsStatus(null);
-            int satsInView = 0;
+            int satsInView = status.getSatelliteCount();
             int satsUsed = 0;
-            Iterable<GpsSatellite> sats = status.getSatellites();
-            for (GpsSatellite sat : sats) {
+            for (int i = 0; i < satsInView; i++) {
                 satsInView++;
-                if (sat.usedInFix()) {
+                if (status.usedInFix(i)) {
                     satsUsed++;
                 }
             }
@@ -129,6 +133,7 @@ public class NavitVehicle {
      * @param fcbid The address of the fix callback function called when a
      * {@code android.location.GPS_FIX_CHANGE} is received, indicating a change in GPS fix status
      */
+    @RequiresApi(api = Build.VERSION_CODES.N)
     NavitVehicle(Context context, long pcbid, long scbid, long fcbid) {
         if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -163,17 +168,85 @@ public class NavitVehicle {
 
         Log.d("NavitVehicle", "Providers " + sLocationManager.getAllProviders());
 
-        String mPreciseProvider = sLocationManager.getBestProvider(highCriteria, false);
+        HashSet<String> preciseProviders;
+        try {
+            preciseProviders = new HashSet<String>(sLocationManager.getProviders(highCriteria, false));
+        } catch (NullPointerException e) {
+            preciseProviders = new HashSet<String>();
+        }
+        HashSet<String> fastProviders;
+        try {
+            fastProviders = new HashSet<String>(sLocationManager.getProviders(lowCriteria, false));
+        } catch (NullPointerException e) {
+            fastProviders = new HashSet<String>();
+        }
+        /*
+         * Never use the passive and fused providers for the precise providers.
+         * These merge data from multiple sources, which can lead to your location skipping back and
+         * forth between two places. While that may be acceptable for the fast provider (just to get a
+         * first location), it may render navigation unusable if such a provider were to be used as the
+         * precise provider.
+         */
+        preciseProviders.remove(LocationManager.PASSIVE_PROVIDER);
+        preciseProviders.remove("fused");
+
+        /*
+         * Some magic to pick the precise provider:
+         * If Android’s best chosen provider is on our list, use that.
+         * Otherwise, if the list has only one candidate, use that.
+         * Otherwise, prefer GPS for the precise provider, if available.
+         * Otherwise, just pick a random provider from the list.
+         */
+        Log.d("NavitVehicle", "Precise Provider candidates " + preciseProviders);
+        String mPreciseProvider = null;
+        if (preciseProviders.contains(sLocationManager.getBestProvider(highCriteria, false)))
+            mPreciseProvider = sLocationManager.getBestProvider(highCriteria, false);
+        else if (preciseProviders.size() == 1)
+            for (String provider : preciseProviders)
+                mPreciseProvider = provider;
+        else if (preciseProviders.contains(LocationManager.GPS_PROVIDER))
+            mPreciseProvider = LocationManager.GPS_PROVIDER;
+        else
+            /*
+             * Multiple providers, but no GPS, nor any fused/passive providers, and we can’t use the
+             * best provider suggested by the OS.
+             * If we ever get here, we’re on a very exotic device.
+             * This may need some more tweaks – right now, we just pick one at random.
+             */
+            for (String provider : preciseProviders) {
+                mPreciseProvider = provider;
+                break;
+            }
         Log.d("NavitVehicle", "Precise Provider " + mPreciseProvider);
-        mFastProvider = sLocationManager.getBestProvider(lowCriteria, false);
+
+        /*
+         * Similar magic to pick the fast provider:
+         * Eliminate the precise provider from our list so we get to use two providers.
+         * If Android’s best chosen provider is on our list, use that.
+         * Otherwise, if the list has only one candidate, use that.
+         * Otherwise, just pick a random provider from the list.
+         */
+        fastProviders.remove(mPreciseProvider);
+        Log.d("NavitVehicle", "Fast Provider candidates " + fastProviders);
+        if (fastProviders.contains(sLocationManager.getBestProvider(lowCriteria, false)))
+            mFastProvider = sLocationManager.getBestProvider(lowCriteria, false);
+        else if (fastProviders.size() == 1)
+            for (String provider: fastProviders)
+                mFastProvider = provider;
+        else
+            for (String provider: fastProviders) {
+                mFastProvider = provider;
+                break;
+            }
         Log.d("NavitVehicle", "Fast Provider " + mFastProvider);
+
         mVehiclePcbid = pcbid;
         mVehicleScbid = scbid;
         mVehicleFcbid = fcbid;
 
         context.registerReceiver(sPreciseLocationListener, new IntentFilter(GPS_FIX_CHANGE));
         sLocationManager.requestLocationUpdates(mPreciseProvider, 0, 0, sPreciseLocationListener);
-        sLocationManager.addGpsStatusListener(sPreciseLocationListener);
+        //sLocationManager.registerGnssStatusCallback(sPreciseLocationListener);
 
         /*
          * Since Android criteria have no way to specify "fast fix", lowCriteria may return the same
@@ -200,7 +273,9 @@ public class NavitVehicle {
         if (sLocationManager != null) {
             if (sPreciseLocationListener != null) {
                 sLocationManager.removeUpdates(sPreciseLocationListener);
-                sLocationManager.removeGpsStatusListener(sPreciseLocationListener);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    //sLocationManager.unregisterGnssStatusCallback(sPreciseLocationListener);
+                }
                 navit.unregisterReceiver(sPreciseLocationListener);
             }
             if (sFastLocationListener != null) {

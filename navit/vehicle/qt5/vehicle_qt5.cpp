@@ -49,32 +49,31 @@ extern "C" {
  * @{
  */
 
-QNavitGeoReceiver::QNavitGeoReceiver(QObject* parent, struct vehicle_priv* c)
-    : QObject(parent) {
+QNavitGeoReceiver::QNavitGeoReceiver(QObject *parent, struct vehicle_priv *c) : QObject(parent) {
     priv = c;
     if (priv->source != NULL) {
         connect(priv->source, SIGNAL(positionUpdated(QGeoPositionInfo)), this, SLOT(positionUpdated(QGeoPositionInfo)));
     }
     if (priv->satellites != NULL) {
-        connect(priv->satellites, SIGNAL(satellitesInUseUpdated(const QList<QGeoSatelliteInfo>&)), this,
-                SLOT(satellitesInUseUpdated(const QList<QGeoSatelliteInfo>&)));
-        connect(priv->satellites, SIGNAL(satellitesInViewUpdated(const QList<QGeoSatelliteInfo>&)), this,
-                SLOT(satellitesInViewUpdated(const QList<QGeoSatelliteInfo>&)));
+        connect(priv->satellites, SIGNAL(satellitesInUseUpdated(const QList<QGeoSatelliteInfo> &)), this,
+                SLOT(satellitesInUseUpdated(const QList<QGeoSatelliteInfo> &)));
+        connect(priv->satellites, SIGNAL(satellitesInViewUpdated(const QList<QGeoSatelliteInfo> &)), this,
+                SLOT(satellitesInViewUpdated(const QList<QGeoSatelliteInfo> &)));
     }
 }
-void QNavitGeoReceiver::satellitesInUseUpdated(const QList<QGeoSatelliteInfo>& sats) {
+void QNavitGeoReceiver::satellitesInUseUpdated(const QList<QGeoSatelliteInfo> &sats) {
     dbg(lvl_debug, "Sats in use: %d", sats.count());
     priv->sats_used = sats.count();
     callback_list_call_attr_0(priv->cbl, attr_position_sats_used);
 }
 
-void QNavitGeoReceiver::satellitesInViewUpdated(const QList<QGeoSatelliteInfo>& sats) {
+void QNavitGeoReceiver::satellitesInViewUpdated(const QList<QGeoSatelliteInfo> &sats) {
     dbg(lvl_debug, "Sats in view: %d", sats.count());
     priv->sats = sats.count();
     callback_list_call_attr_0(priv->cbl, attr_position_qual);
 }
 
-void QNavitGeoReceiver::positionUpdated(const QGeoPositionInfo& info) {
+void QNavitGeoReceiver::positionUpdated(const QGeoPositionInfo &info) {
     /* ignore stale view */
     if (info.coordinate().isValid()) {
         if (info.timestamp().toUTC().secsTo(QDateTime::currentDateTimeUtc()) > 20) {
@@ -112,7 +111,8 @@ void QNavitGeoReceiver::positionUpdated(const QGeoPositionInfo& info) {
     }
 
     if (info.coordinate().isValid()) {
-        dbg(lvl_debug, "Got valid coordinate (lat %f, lon %f)", info.coordinate().latitude(), info.coordinate().longitude());
+        dbg(lvl_debug, "Got valid coordinate (lat %f, lon %f)", info.coordinate().latitude(),
+            info.coordinate().longitude());
         priv->geo.lat = info.coordinate().latitude();
         priv->geo.lng = info.coordinate().longitude();
         if (info.coordinate().type() == QGeoCoordinate::Coordinate3D) {
@@ -142,7 +142,7 @@ void QNavitGeoReceiver::positionUpdated(const QGeoPositionInfo& info) {
  * @param priv
  * @returns nothing
  */
-static void vehicle_qt5_destroy(struct vehicle_priv* priv) {
+static void vehicle_qt5_destroy(struct vehicle_priv *priv) {
     dbg(lvl_debug, "enter");
     if (priv->receiver != NULL)
         delete priv->receiver;
@@ -159,9 +159,8 @@ static void vehicle_qt5_destroy(struct vehicle_priv* priv) {
  * @param attr
  * @returns true/false
  */
-static int vehicle_qt5_position_attr_get(struct vehicle_priv* priv,
-        enum attr_type type, struct attr* attr) {
-    struct attr* active = NULL;
+static int vehicle_qt5_position_attr_get(struct vehicle_priv *priv, enum attr_type type, struct attr *attr) {
+    struct attr *active = NULL;
     dbg(lvl_debug, "enter %s", attr_to_name(type));
     switch (type) {
     case attr_position_valid:
@@ -197,8 +196,7 @@ static int vehicle_qt5_position_attr_get(struct vehicle_priv* priv,
         if (priv->fix_time) {
             struct tm tm;
             if (gmtime_r(&priv->fix_time, &tm)) {
-                strftime(priv->fixiso8601, sizeof(priv->fixiso8601),
-                         "%Y-%m-%dT%TZ", &tm);
+                strftime(priv->fixiso8601, sizeof(priv->fixiso8601), "%Y-%m-%dT%TZ", &tm);
                 attr->u.str = priv->fixiso8601;
             } else {
                 priv->fix_time = 0;
@@ -228,7 +226,7 @@ static int vehicle_qt5_position_attr_get(struct vehicle_priv* priv,
     return 1;
 }
 
-static int vehicle_qt5_set_attr(struct vehicle_priv* priv, struct attr* attr) {
+static int vehicle_qt5_set_attr(struct vehicle_priv *priv, struct attr *attr) {
     switch (attr->type) {
     case attr_position_speed:
         priv->speed = *attr->u.numd;
@@ -264,18 +262,26 @@ struct vehicle_methods vehicle_null_methods = {
  * @param attrs
  * @returns vehicle_priv
  */
-static struct vehicle_priv* vehicle_qt5_new_qt5(struct vehicle_methods* meth,
-        struct callback_list* cbl,
-        struct attr** attrs) {
-    struct vehicle_priv* ret;
+static struct vehicle_priv *vehicle_qt5_new_qt5(struct vehicle_methods *meth, struct callback_list *cbl,
+                                                struct attr **attrs) {
+    struct vehicle_priv *ret;
+    struct attr *source_attr = NULL;
 
     dbg(lvl_debug, "enter");
     ret = g_new0(struct vehicle_priv, 1);
     ret->cbl = cbl;
     *meth = vehicle_null_methods;
-    ret->attrs = attrs;
-    ret->source = QGeoPositionInfoSource::createDefaultSource(NULL);
-    ret->satellites = QGeoSatelliteInfoSource::createDefaultSource(NULL);
+    ret->attrs = attr_list_dup(attrs);
+    /* Get qt location source from config if there*/
+    if ((source_attr = attr_search(attrs, attr_src))) {
+        ret->source = QGeoPositionInfoSource::createSource(QString(source_attr->u.str), NULL);
+        ret->satellites = QGeoSatelliteInfoSource::createSource(QString(source_attr->u.str), NULL);
+    } else {
+        /* get the dafult source. unfortunately this is often defunct. E.g. on UBTouch */
+        ret->source = QGeoPositionInfoSource::createDefaultSource(NULL);
+        ret->satellites = QGeoSatelliteInfoSource::createDefaultSource(NULL);
+    }
+    /* create surrounding application */
     if (ret->source == NULL) {
         dbg(lvl_error, "Got NO QGeoPositionInfoSource");
     } else {

@@ -25,6 +25,8 @@ extern "C" {
 #endif
 #include "coord.h"
 
+#define TRANSFORM_ERR_BUF_SPACE -1
+
 /* prototypes */
 enum attr_type;
 enum item_type;
@@ -49,13 +51,17 @@ void transform_set_order_base(struct transformation *this_, int order_base);
 struct transformation *transform_dup(struct transformation *t);
 void transform_to_geo(enum projection pro, const struct coord *c, struct coord_geo *g);
 void transform_from_geo(enum projection pro, const struct coord_geo *g, struct coord *c);
-void transform_from_to_count(struct coord *cfrom, enum projection from, struct coord *cto, enum projection to, int count);
+void transform_from_to_count(struct coord *cfrom, enum projection from, struct coord *cto, enum projection to,
+                             int count);
 void transform_from_to(struct coord *cfrom, enum projection from, struct coord *cto, enum projection to);
 void transform_geo_to_cart(struct coord_geo *geo, navit_float a, navit_float b, struct coord_geo_cart *cart);
 void transform_cart_to_geo(struct coord_geo_cart *cart, navit_float a, navit_float b, struct coord_geo *geo);
-void transform_utm_to_geo(const double UTMEasting, const double UTMNorthing, int ZoneNumber, int NorthernHemisphere, struct coord_geo *geo);
+void transform_utm_to_geo(const double UTMEasting, const double UTMNorthing, int ZoneNumber, int NorthernHemisphere,
+                          struct coord_geo *geo);
 void transform_datum(struct coord_geo *from, enum map_datum from_datum, struct coord_geo *to, enum map_datum to_datum);
-int transform(struct transformation *t, enum projection pro, struct coord *c, struct point *p, int count, int mindist, int width, int *width_return);
+int transform_point(struct transformation *t, enum projection pro, struct coord *c, struct point *p);
+int transform_point_buf(struct transformation *t, enum projection pro, struct coord *c, struct point *p,
+                        long result_size, int count, int mindist, int width, int *width_return);
 int transform_reverse(struct transformation *t, struct point *p, struct coord *c);
 double transform_pixels_to_map_distance(struct transformation *transformation, int pixels);
 enum projection transform_get_projection(struct transformation *this_);
@@ -78,6 +84,7 @@ void transform_set_screen_center(struct transformation *t, struct point *p);
 void transform_get_size(struct transformation *t, int *width, int *height);
 void transform_setup(struct transformation *t, struct pcoord *c, int scale, int yaw);
 void transform_setup_source_rect(struct transformation *t);
+void transform_setup_source_rect_scale(struct transformation *t, int scale_factor);
 long transform_get_scale(struct transformation *t);
 void transform_set_scale(struct transformation *t, long scale);
 int transform_get_order(struct transformation *t);

@@ -1,14 +1,10 @@
 #include "qml_bookmark.h"
 
-BookmarkObject::BookmarkObject(QObject *parent)
-    : QObject(parent) {
+BookmarkObject::BookmarkObject(QObject *parent) : QObject(parent) {
 }
 
-BookmarkObject::BookmarkObject(
-    const QString &name,
-    struct pcoord &coords,
-    QObject *parent)
-    : QObject(parent), m_name(name), m_coords(coords) {
+BookmarkObject::BookmarkObject(const QString &name, struct pcoord &coords, QObject *parent)
+    : QObject(parent), m_coords(coords), m_name(name) {
 }
 
 QString BookmarkObject::name() const {

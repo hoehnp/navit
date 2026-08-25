@@ -1,33 +1,137 @@
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+apply plugin: 'com.android.application'
+apply from: "$project.rootDir/gradle/scripts/git-scm-version.gradle"
+apply plugin: 'checkstyle'
 
 buildscript {
     repositories {
         google()
-        jcenter()
-        maven {
-            url 'https://maven.google.com/'
-            name 'Google'
-        }
+        mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.5.0'
-
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+        classpath 'com.android.tools.build:gradle:9.3.2'
     }
 }
 
 allprojects {
     repositories {
         google()
-        jcenter()
-        maven {
-            url 'https://maven.google.com/'
-            name 'Google'
-        }
+        mavenCentral()
     }
 }
 
-task clean(type: Delete) {
-    delete rootProject.buildDir
+android {
+    namespace = "org.navitproject.navit"
+    ndkVersion = "27.3.13750724"
+    signingConfigs {
+        release {
+            // We can leave these in environment variables
+            storeFile file(System.getenv("KEYSTORE")  ?: "/store")
+            keyAlias System.getenv("KEY_ALIAS")
+            storePassword System.getenv("STORE_PASS")
+            keyPassword System.getenv("STORE_PASS")
+        }
+    }
+    defaultConfig {
+        compileSdk = 36
+        applicationId "org.navitproject.navit"
+        minSdk 21
+        targetSdk 36
+        versionCode gitVersionCode
+        versionName gitVersionName
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters 'x86', 'x86_64', 'arm64-v8a', 'armeabi-v7a'
+        }
+        externalNativeBuild {
+            cmake {
+                arguments '-DDISABLE_CXX=y', '-DUSE_PLUGINS=n', '-DBUILD_MAPTOOL=n', '-DXSL_PROCESSING=y', '-DSAMPLE_MAP=n', '-DGRADLE_BUILD_DIR='+layout.buildDirectory.file('generated/navit_generated').get().getAsFile(),"-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+            }
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if(file(System.getenv("KEYSTORE")  ?: "/store").exists()){
+                signingConfig signingConfigs.release
+            }
+        }
+        debug {
+            applicationIdSuffix ".debug"
+        }
+    }
+    sourceSets {
+        main {
+            manifest.srcFile "navit/android/AndroidManifest.xml"
+            java.srcDirs = ["navit/android/src"]
+            resources.srcDirs = ["navit/android/src"]
+            renderscript.srcDirs = ["navit/android/src"]
+            res.srcDirs = ["navit/android/res", layout.buildDirectory.file('generated/navit_generated/android/res').get().getAsFile()]
+            assets.srcDirs =  ["navit/android/assets", layout.buildDirectory.file('generated/navit_generated/android/assets').get().getAsFile()]
+
+        }
+        release {
+            manifest.srcFile "navit/android/AndroidManifestRelease.xml"
+        }
+    }
+    externalNativeBuild {
+        cmake {
+            buildStagingDirectory "./android-builddir"
+            path 'CMakeLists.txt'
+        }
+    }
+
+    tasks.register('checkstyleMain', Checkstyle) {
+        source 'navit/android/src'
+        include '**/*.java'
+        configFile = rootProject.file('checkstyle.xml')
+        ignoreFailures = false
+        showViolations = true
+        // empty classpath
+        classpath = files()
+        reports {
+            include('**/*.java')
+            xml {
+                required = true
+                outputLocation = file("checkstyle/checkstyleMain.xml")
+            }
+            html {
+                required = true
+                outputLocation = file("checkstyle/checkstyleMain.html")
+            }
+        }
+
+        checkstyle {
+            toolVersion = '14.0.0'
+        }
+    }
+
+    lint {
+        abortOnError = true
+        disable 'UnusedResources'
+    }
+    buildFeatures {
+        renderScript = true
+    }
+
+    androidComponents {
+        onVariants(selector().all(), { variant ->
+            variant.outputs.each { output ->
+                def isSigned = variant.signingConfig != null ? "signed" : "unsigned"
+                output.outputFileName.set("navit-android-${gitVersionName}-${variant.name}-${isSigned}.apk")
+            }
+        })
+    }
+}
+
+clean {
+    delete "./android-builddir"
+}
+
+dependencies {
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:3.0.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    testImplementation 'junit:junit:4.13.2'
+    implementation 'com.android.support:support-v4:28.0.0'
 }

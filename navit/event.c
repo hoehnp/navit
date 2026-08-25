@@ -17,11 +17,15 @@
  * Boston, MA  02110-1301, USA.
  */
 
-#include <string.h>
-#include <stdlib.h>
 #include "event.h"
-#include "plugin.h"
 #include "debug.h"
+#include "plugin.h"
+#include <stdlib.h>
+#include <string.h>
+#ifndef _WIN32
+#    include <fcntl.h>
+#    include <unistd.h>
+#endif
 
 static struct event_methods event_methods;
 static const char *e_requestor;
@@ -29,20 +33,62 @@ static const char *e_system;
 
 static int has_quit;
 
-#define require_method_helper(m)\
-	if(!event_methods.m) {\
-		dbg(lvl_error, "Can't find event system method %s. Event system is %s%s",\
-			#m ,e_system?"set to ":"not set.", e_system?e_system:"");\
+#ifdef _WIN32
 
-#define require_method(m)\
-		require_method_helper(m)\
-		return;\
-	}
+void event_signal_notify(void) {
+    event_main_loop_quit();
+}
 
-#define require_method2(m,r)\
-		require_method_helper(m)\
-		return r;\
-	}
+int event_get_signal_fd(void) {
+    return -1;
+}
+
+#else
+
+static int sig_pipe_fds[2] = {-1, -1};
+
+static void sig_pipe_init(void) __attribute__((constructor));
+static void sig_pipe_init(void) {
+    if (pipe(sig_pipe_fds) < 0) {
+        sig_pipe_fds[0] = sig_pipe_fds[1] = -1;
+    } else {
+        int flags;
+        flags = fcntl(sig_pipe_fds[0], F_GETFL);
+        if (flags != -1)
+            fcntl(sig_pipe_fds[0], F_SETFL, flags | O_NONBLOCK);
+        flags = fcntl(sig_pipe_fds[1], F_GETFL);
+        if (flags != -1)
+            fcntl(sig_pipe_fds[1], F_SETFL, flags | O_NONBLOCK);
+    }
+}
+
+void event_signal_notify(void) {
+    if (sig_pipe_fds[1] != -1) {
+        char c = 1;
+        if (write(sig_pipe_fds[1], &c, 1) < 0) {
+            /* ignore EAGAIN (pipe full) and other harmless errors */
+        }
+    }
+}
+
+int event_get_signal_fd(void) {
+    return sig_pipe_fds[0];
+}
+
+#endif
+
+#define require_method_helper(m)                                                                                       \
+    if (!event_methods.m) {                                                                                            \
+        dbg(lvl_error, "Can't find event system method %s. Event system is %s%s", #m,                                  \
+            e_system ? "set to " : "not set.", e_system ? e_system : "");
+
+#define require_method(m)                                                                                              \
+    require_method_helper(m) return;                                                                                   \
+    }
+
+#define require_method2(m, r)                                                                                          \
+    require_method_helper(m) return r;                                                                                 \
+    }
 
 void event_main_loop_run(void) {
     require_method(main_loop_run);
@@ -52,15 +98,14 @@ void event_main_loop_run(void) {
 void event_main_loop_quit(void) {
     if (event_methods.main_loop_quit)
         event_methods.main_loop_quit();
-    has_quit=1;
+    has_quit = 1;
 }
 
 int event_main_loop_has_quit(void) {
     return has_quit;
 }
 
-struct event_watch *
-event_add_watch(int fd, enum event_watch_cond cond, struct callback *cb) {
+struct event_watch *event_add_watch(int fd, enum event_watch_cond cond, struct callback *cb) {
     require_method2(add_watch, NULL);
     return event_methods.add_watch(fd, cond, cb);
 }
@@ -79,8 +124,7 @@ void event_remove_watch(struct event_watch *ev) {
  *
  * @returns the result of the event_methods.add_timeout() call
  */
-struct event_timeout *
-event_add_timeout(int timeout, int multi, struct callback *cb) {
+struct event_timeout *event_add_timeout(int timeout, int multi, struct callback *cb) {
     require_method2(add_timeout, NULL);
     return event_methods.add_timeout(timeout, multi, cb);
 }
@@ -90,10 +134,9 @@ void event_remove_timeout(struct event_timeout *ev) {
     event_methods.remove_timeout(ev);
 }
 
-struct event_idle *
-event_add_idle(int priority, struct callback *cb) {
+struct event_idle *event_add_idle(int priority, struct callback *cb) {
     require_method2(add_idle, NULL);
-    return event_methods.add_idle(priority,cb);
+    return event_methods.add_idle(priority, cb);
 }
 
 void event_remove_idle(struct event_idle *ev) {
@@ -114,22 +157,20 @@ int event_request_system(const char *system, const char *requestor) {
     void (*event_type_new)(struct event_methods *meth);
     if (e_system) {
         if (strcmp(e_system, system)) {
-            dbg(lvl_error,"system '%s' already requested by '%s', can't set to '%s' as requested from '%s'", e_system, e_requestor,
-                system, requestor);
+            dbg(lvl_error, "system '%s' already requested by '%s', can't set to '%s' as requested from '%s'", e_system,
+                e_requestor, system, requestor);
             return 0;
         }
         return 1;
     }
-    event_type_new=plugin_get_category_event(system);
-    if (! event_type_new) {
-        dbg(lvl_error,"unsupported event system '%s' requested from '%s'", system, requestor);
+    event_type_new = plugin_get_category_event(system);
+    if (!event_type_new) {
+        dbg(lvl_error, "unsupported event system '%s' requested from '%s'", system, requestor);
         return 0;
     }
     event_type_new(&event_methods);
-    e_system=system;
-    e_requestor=requestor;
+    e_system = system;
+    e_requestor = requestor;
 
     return 1;
 }
-
-
