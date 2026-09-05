@@ -679,10 +679,10 @@ public class NavitMapDownloader extends Thread {
         return success;
     }
 
-    private String getLatestDate() {
-        if (this.mGitHubMetadata != "") {
+    private static String getLatestDate(String githHubMetadata) {
+        if (githHubMetadata != "") {
             try {
-                JSONObject objectFile = (JSONObject) new JSONTokener(this.mGitHubMetadata).nextValue();
+                JSONObject objectFile = (JSONObject) new JSONTokener(githHubMetadata).nextValue();
                 return objectFile.getString("tag_name");
             } catch (JSONException e) {
                 Log.e(TAG, "We failed to retrieve the date. ");
@@ -695,25 +695,25 @@ public class NavitMapDownloader extends Thread {
                 return (String) "";
         }
     }
-    ba521c5dfbb9f75e8549a003cba7a4c759c9bef5
-            ba521c5dfbb9f75e8549a003cba7a4c759c9bef5
+
     private static long getEstSizeBytes(int mapId, int subMapIndex, String githubMetadata) {
             if (subMapIndex < osm_maps[mapId].mSubMaps.length) {
                 try {
                     JSONObject objectFile = (JSONObject) new JSONTokener(githubMetadata).nextValue();
-                    JSONArray objectAssets = objectFile.getJSONArray("assets");
-                    JSONArray objectMap = objectAssets.getJSONArray("");
+                    JSONArray arrayAssets = objectFile.getJSONArray("assets");
+                    String nameSearched = osm_maps[mapId].mSubMaps[subMapIndex] + "-" + getLatestDate(githubMetadata) + ".bin";
+                    for (int i=0; i<arrayAssets.length(); i++) {
+                        JSONObject item = arrayAssets.getJSONObject(i);
+                        if (item.getString("name") == nameSearched) {
+                            return item.getLong("size");
+                        }
+                    }
                 } catch (JSONException e) {
                     return 0;
                 }
-
-                int ind_dataset = githubMetadata.indexOf(osm_maps[mapId].mSubMaps[subMapIndex]);
-                int ind_colon = githubMetadata.indexOf("size", ind_dataset) + 6;
-                int ind_comma = githubMetadata.indexOf(",", ind_colon);
-                return Math.max(Long.valueOf(githubMetadata.substring(ind_colon, ind_comma)), 0);
-            } else {
-                return 0;
             }
+            return 0;
+
     }
 
     private long getMapSize(int mapId) {
@@ -737,7 +737,7 @@ public class NavitMapDownloader extends Thread {
     private URL getDownloadURL(int subMapIndex) {
         URL url=null;
         try {
-	    String date = getLatestDate();
+	    String date = getLatestDate(this.mGitHubMetadata);
 	    if (date != "") {
                     url =
                         new URL("https://github.com/navit-gps/gh-actions-mapserver/releases/download/" + date + "/"
