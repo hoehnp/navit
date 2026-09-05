@@ -632,7 +632,10 @@ public class NavitMapDownloader extends Thread {
             }
 
             if (realSizeBytes <= 0) {
-                realSizeBytes = getEstSizeBytes(this.mMapId, subMapIndex, this.mGitHubMetadata);
+                if (this.mGitHubMetadata != "")
+                    realSizeBytes = getEstSizeBytes(this.mMapId, subMapIndex, this.mGitHubMetadata);
+                else
+                    realSizeBytes = 0;
             }
 
             Log.d(TAG, "size: " + realSizeBytes + ", read: " + alreadyRead + ", timestamp: "
@@ -720,7 +723,8 @@ public class NavitMapDownloader extends Thread {
         long size = 0;
 
         for (int subMapIndex = 0; subMapIndex < osm_maps[mapId].mSubMaps.length; subMapIndex++) {
-            size += getEstSizeBytes(mapId, subMapIndex, this.mGitHubMetadata);
+            if (this.mGitHubMetadata != "")
+                size += getEstSizeBytes(mapId, subMapIndex, this.mGitHubMetadata);
         }
         return size;
     }
@@ -737,7 +741,7 @@ public class NavitMapDownloader extends Thread {
     private URL getDownloadURL(int subMapIndex) {
         URL url=null;
         try {
-	    String date = getLatestDate(this.mGitHubMetadata);
+	        String date = getLatestDate(this.mGitHubMetadata);
 	    if (date != "") {
                     url =
                         new URL("https://github.com/navit-gps/gh-actions-mapserver/releases/download/" + date + "/"
