@@ -356,7 +356,7 @@ public class NavitMapDownloader extends Thread {
                          1, canada),
         new OsmMapValues(R.string.hawaii, "-161.07", "18.49", "-154.45", "22.85",
                          1, new String[]{"north-america-us-hawaii"}),
-        new OsmMapValues(R.string.usa+R.string.except_alaska_and_hawaii, "-125.4", "24.3", "-66.5", "49.3",
+        new OsmMapValues(R.string.usa, R.string.except_alaska_and_hawaii, "-125.4", "24.3", "-66.5", "49.3",
                          1, us),
         new OsmMapValues(R.string.michigan, "-90.47", "41.64", "-79.00", "49.37",
                          2, new String[]{"north-america-us-michigan"}),
