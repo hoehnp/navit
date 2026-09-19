@@ -707,7 +707,7 @@ public class NavitMapDownloader extends Thread {
                     String nameSearched = osm_maps[mapId].mSubMaps[subMapIndex] + "-" + getLatestDate(githubMetadata) + ".bin";
                     for (int i=0; i<arrayAssets.length(); i++) {
                         JSONObject item = arrayAssets.getJSONObject(i);
-                        if (item.getString("name") == nameSearched) {
+                        if (item.getString("name").equal(nameSearched)) {
                             return item.getLong("size");
                         }
                     }
