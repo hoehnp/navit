@@ -43,7 +43,7 @@ import java.net.URLConnection;
 import java.lang.String;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
-
+import java.util.Hashtable;
 
 
 /*
@@ -708,7 +708,25 @@ public class NavitMapDownloader extends Thread {
                 }
             }
             return 0;
+    }
 
+    private static long getEstSizeBytes(int mapId, int subMapIndex, String githubMetadata, Hashtable mapSize) {
+        if (subMapIndex < osm_maps[mapId].mSubMaps.length) {
+            try {
+                if (mapSize.size()>0){
+                    String nameSearched = osm_maps[mapId].mSubMaps[subMapIndex] + "-" + getLatestDate(githubMetadata) + ".bin";
+                    return (long) mapSize.get(nameSearched);
+                }
+                else {
+                    Log.e(TAG, "mapSize is empty");
+                }
+            } catch (Exception e) {
+                Log.e(TAG, e.getMessage());
+                e.printStackTrace();
+                return 0;
+            }
+        }
+        return 0;
     }
 
     private long getMapSize(int mapId) {
@@ -726,6 +744,15 @@ public class NavitMapDownloader extends Thread {
 
         for (int subMapIndex = 0; subMapIndex < osm_maps[mapId].mSubMaps.length; subMapIndex++) {
             size += getEstSizeBytes(mapId, subMapIndex, githubMetadata);
+        }
+        return size;
+    }
+
+    public static long getMapSize(int mapId, String githubMetadata, Hashtable mapsize) {
+        long size = 0;
+
+        for (int subMapIndex = 0; subMapIndex < osm_maps[mapId].mSubMaps.length; subMapIndex++) {
+            size += getEstSizeBytes(mapId, subMapIndex, githubMetadata, mapsize);
         }
         return size;
     }

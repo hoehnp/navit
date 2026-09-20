@@ -36,6 +36,11 @@ import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +49,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.List;
 
 
@@ -58,6 +64,7 @@ public class NavitDownloadSelectMapActivity extends ExpandableListActivity {
 
     public static String githubMetadata = "";
 
+    public static HashMap mapSize = new HashMap();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -118,6 +125,17 @@ public class NavitDownloadSelectMapActivity extends ExpandableListActivity {
         thread.start();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             thread.onSpinWait();
+        }
+        try {
+            JSONObject objectFile = (JSONObject) new JSONTokener(githubMetadata).nextValue();
+            JSONArray arrayAssets = objectFile.getJSONArray("assets");
+            for (int i = 0; i < arrayAssets.length(); i++) {
+                JSONObject item = arrayAssets.getJSONObject(i);
+                mapSize.put(item.getString("name"), item.getLong("size"));
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
+            e.printStackTrace();
         }
     }
 
