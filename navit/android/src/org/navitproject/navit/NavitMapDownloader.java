@@ -463,23 +463,7 @@ public class NavitMapDownloader extends Thread {
     NavitMapDownloader(int mapId) {
         this.mMapValues = osm_maps[mapId];
         this.mMapId = mapId;
-
-        URL url;
-        try {
-            url = new URL("https://api.github.com/repositories/384098365/releases/latest");
-
-            InputStream is = url.openStream();
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
-            this.mGitHubMetadata = br.readLine();
-        } catch (MalformedURLException e) {
-            Log.e(TAG, "We failed to create a URL to download the github api file.");
-            e.printStackTrace();
-            this.mGitHubMetadata = "";
-        } catch (IOException e) {
-            Log.e(TAG, "We failed to download the github api file.");
-            e.printStackTrace();
-            this.mGitHubMetadata = "";
-        }
+        this.mGitHubMetadata = NavitDownloadSelectMapActivity.githubMetadata;
     }
 
     static NavitMap[] getAvailableMaps() {
@@ -702,16 +686,24 @@ public class NavitMapDownloader extends Thread {
     private static long getEstSizeBytes(int mapId, int subMapIndex, String githubMetadata) {
             if (subMapIndex < osm_maps[mapId].mSubMaps.length) {
                 try {
-                    JSONObject objectFile = (JSONObject) new JSONTokener(githubMetadata).nextValue();
-                    JSONArray arrayAssets = objectFile.getJSONArray("assets");
-                    String nameSearched = osm_maps[mapId].mSubMaps[subMapIndex] + "-" + getLatestDate(githubMetadata) + ".bin";
-                    for (int i=0; i<arrayAssets.length(); i++) {
-                        JSONObject item = arrayAssets.getJSONObject(i);
-                        if (item.getString("name").equal(nameSearched)) {
-                            return item.getLong("size");
+                    Log.e(TAG, githubMetadata);
+                    if (githubMetadata!=""){
+                        JSONObject objectFile = (JSONObject) new JSONTokener(githubMetadata).nextValue();
+                        JSONArray arrayAssets = objectFile.getJSONArray("assets");
+                        String nameSearched = osm_maps[mapId].mSubMaps[subMapIndex] + "-" + getLatestDate(githubMetadata) + ".bin";
+                        for (int i = 0; i < arrayAssets.length(); i++) {
+                            JSONObject item = arrayAssets.getJSONObject(i);
+                            if (nameSearched.equals(item.getString("name"))) {
+                                return item.getLong("size");
+                            }
                         }
                     }
+                    else {
+                        Log.e(TAG, "githubMetadata is empty");
+                    }
                 } catch (JSONException e) {
+                    Log.e(TAG, e.getMessage());
+                    e.printStackTrace();
                     return 0;
                 }
             }
