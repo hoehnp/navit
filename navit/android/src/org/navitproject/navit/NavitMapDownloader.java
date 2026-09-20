@@ -687,7 +687,6 @@ public class NavitMapDownloader extends Thread {
     private static long getEstSizeBytes(int mapId, int subMapIndex, String githubMetadata) {
             if (subMapIndex < osm_maps[mapId].mSubMaps.length) {
                 try {
-                    Log.e(TAG, githubMetadata);
                     if (githubMetadata!=""){
                         JSONObject objectFile = (JSONObject) new JSONTokener(githubMetadata).nextValue();
                         JSONArray arrayAssets = objectFile.getJSONArray("assets");
