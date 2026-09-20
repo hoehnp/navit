@@ -190,7 +190,7 @@ public class NavitDownloadSelectMapActivity extends ExpandableListActivity {
                         HashMap<String, String> currentPositionMapChild = new HashMap<>();
                         currentPositionMapChild.put("map_name", NavitMapDownloader.osm_maps[currentMapIndex].mMapName
                                     + " "
-                                    + (NavitMapDownloader.getMapSize(currentMapIndex, githubMetadata) / 1024 / 1024)
+                                    + (NavitMapDownloader.getMapSize(currentMapIndex, githubMetadata, mapSize) / 1024 / 1024)
                                     + "MB");
                         currentPositionMapChild.put("map_index", String.valueOf(currentMapIndex));
 

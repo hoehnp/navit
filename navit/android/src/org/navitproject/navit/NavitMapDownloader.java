@@ -43,6 +43,7 @@ import java.net.URLConnection;
 import java.lang.String;
 import java.io.InputStreamReader;
 import java.io.BufferedReader;
+import java.util.HashMap;
 import java.util.Hashtable;
 
 
@@ -710,7 +711,7 @@ public class NavitMapDownloader extends Thread {
             return 0;
     }
 
-    private static long getEstSizeBytes(int mapId, int subMapIndex, String githubMetadata, Hashtable mapSize) {
+    private static long getEstSizeBytes(int mapId, int subMapIndex, String githubMetadata, HashMap mapSize) {
         if (subMapIndex < osm_maps[mapId].mSubMaps.length) {
             try {
                 if (mapSize.size()>0){
@@ -748,7 +749,7 @@ public class NavitMapDownloader extends Thread {
         return size;
     }
 
-    public static long getMapSize(int mapId, String githubMetadata, Hashtable mapsize) {
+    public static long getMapSize(int mapId, String githubMetadata, HashMap mapsize) {
         long size = 0;
 
         for (int subMapIndex = 0; subMapIndex < osm_maps[mapId].mSubMaps.length; subMapIndex++) {
