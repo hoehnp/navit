@@ -64,8 +64,6 @@ public class NavitDownloadSelectMapActivity extends ExpandableListActivity {
 
     public static String githubMetadata = "";
 
-    public static HashMap mapSize = new HashMap();
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -126,17 +124,6 @@ public class NavitDownloadSelectMapActivity extends ExpandableListActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             thread.onSpinWait();
         }
-        try {
-            JSONObject objectFile = (JSONObject) new JSONTokener(githubMetadata).nextValue();
-            JSONArray arrayAssets = objectFile.getJSONArray("assets");
-            for (int i = 0; i < arrayAssets.length(); i++) {
-                JSONObject item = arrayAssets.getJSONObject(i);
-                mapSize.put(item.getString("name"), item.getLong("size"));
-            }
-        } catch (JSONException e) {
-            Log.e(TAG, e.getMessage());
-            e.printStackTrace();
-        }
     }
 
     private void updateDownloadedMaps() {
@@ -190,7 +177,7 @@ public class NavitDownloadSelectMapActivity extends ExpandableListActivity {
                         HashMap<String, String> currentPositionMapChild = new HashMap<>();
                         currentPositionMapChild.put("map_name", NavitMapDownloader.osm_maps[currentMapIndex].mMapName
                                     + " "
-                                    + (NavitMapDownloader.getMapSize(currentMapIndex, githubMetadata, mapSize) / 1024 / 1024)
+                                    + (NavitMapDownloader.getMapSize(currentMapIndex, githubMetadata) / 1024 / 1024)
                                     + "MB");
                         currentPositionMapChild.put("map_index", String.valueOf(currentMapIndex));
 
@@ -237,7 +224,7 @@ public class NavitDownloadSelectMapActivity extends ExpandableListActivity {
             HashMap<String, String> child = new HashMap<>();
             child.put("map_name", (osmMaps[currentMapIndex].mLevel > 1 ? MAP_BULLETPOINT : "")
                     + osmMaps[currentMapIndex].mMapName + " "
-                    + (NavitMapDownloader.getMapSize(currentMapIndex, githubMetadata, mapSize) / 1024 / 1024) + "MB");
+                    + (NavitMapDownloader.getMapSize(currentMapIndex, githubMetadata) / 1024 / 1024) + "MB");
             child.put("map_index", String.valueOf(currentMapIndex));
 
             secList.add(child);

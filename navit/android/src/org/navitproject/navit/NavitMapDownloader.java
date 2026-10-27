@@ -1018,7 +1018,7 @@ public class NavitMapDownloader extends Thread {
             return (String) "";
         }
     }
-    
+
     private static long getEstSizeBytes(int mapId, int subMapIndex, String githubMetadata) {
             if (subMapIndex < osm_maps[mapId].mSubMaps.length) {
                 try {
