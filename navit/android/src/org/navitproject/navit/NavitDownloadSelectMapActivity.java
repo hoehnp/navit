@@ -49,7 +49,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 
 
@@ -67,6 +66,8 @@ public class NavitDownloadSelectMapActivity extends ExpandableListActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        setTitle("Building map list.");
 
         try {
             updateGithubMetaData();
