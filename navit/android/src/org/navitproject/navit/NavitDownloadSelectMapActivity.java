@@ -68,7 +68,7 @@ public class NavitDownloadSelectMapActivity extends ExpandableListActivity {
         super.onCreate(savedInstanceState);
 
         NavitDialogs.sendDialogMessage(NavitDialogs.MSG_TOAST_LONG, null,
-                "", "Building map list",
+                "Building map list",
                 -1, 0, 0);
 
         try {
