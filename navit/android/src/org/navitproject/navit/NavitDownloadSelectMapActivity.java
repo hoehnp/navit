@@ -68,9 +68,15 @@ public class NavitDownloadSelectMapActivity extends ExpandableListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Bundle b = new Bundle();
-        b.putString("title", "Building Map List!");
-        finish();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                NavitDialogs.sendDialogMessage(NavitDialogs.MSG_TOAST_LONG, null,
+                        "Building map list",
+                        -1, 0, 0);
+            }
+        });
+        thread.start();
 
         try {
             updateGithubMetaData();
