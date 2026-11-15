@@ -29,12 +29,14 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.ExpandableListView;
 import android.widget.SimpleExpandableListAdapter;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,7 +53,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-
 public class NavitDownloadSelectMapActivity extends ExpandableListActivity {
 
     private static final String MAP_BULLETPOINT = " * ";
@@ -67,9 +68,9 @@ public class NavitDownloadSelectMapActivity extends ExpandableListActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        NavitDialogs.sendDialogMessage(NavitDialogs.MSG_TOAST_LONG, null,
-                "Building map list",
-                -1, 0, 0);
+        Bundle b = new Bundle();
+        b.putString("title", "Building Map List!");
+        finish();
 
         try {
             updateGithubMetaData();
